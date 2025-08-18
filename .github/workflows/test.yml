@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  JUPYTER_PLATFORM_DIRS: '1'
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python-version: '3.11'
+          - python-version: '3.13'
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+        filter: blob:none
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+    - run: uv pip install --system -e .[test]
+    - uses: pavelzw/pytest-action@v2
+      with:
+        custom-arguments: --color=yes
+        click-to-expand: false
+        verbose: true
+        job-summary: true
+        emoji: false
