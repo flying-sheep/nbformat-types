@@ -10,10 +10,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, cast
 
-import jsonschema_gentypes.configuration as jgc
 import nbformat
 from hatchling.builders.config import BuilderConfig
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
+from jsonschema_gentypes import configuration as jgc
 from jsonschema_gentypes.cli import process_config
 
 if TYPE_CHECKING:
@@ -38,9 +38,9 @@ def _get_schemas() -> dict[str, tuple[str, str]]:
     return {
         f"v{maj}_{min_}": (
             file_name,
-            (nb_files / f"v{mod.nbformat}" / file_name).read_text(),
+            (nb_files / f"v{v}" / file_name).read_text(),
         )
-        for mod in cast("dict[str, nbformat.v4]", nbformat.versions).values()  # pyright: ignore[reportInvalidTypeForm]
+        for v, mod in cast("dict[int, nbformat.v4]", nbformat.versions).items()  # pyright: ignore[reportInvalidTypeForm]
         for (maj, min_), file_name in cast(
             "dict[tuple[str, str] | tuple[None, None], str]",
             getattr(mod, "nbformat_schema", {}),
@@ -62,21 +62,33 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
             in self.build_config.builder.metadata.core.python_constraint  # pyright: ignore[reportUnknownMemberType]
         )
 
+        # get write directory and set it as artifact (VCS-ignored dir to include)
         write_dir = Path(self.config["dir"])
         write_dir.mkdir(parents=True, exist_ok=True)
 
         build_data["artifacts"] = [str(write_dir)]
 
+        # generate __init__.py
         schemas = _get_schemas()
-        current = f"v{nbformat.current_nbformat}_{nbformat.current_nbformat_minor}"
+        aliases = dict(
+            current=f"v{nbformat.current_nbformat}_{nbformat.current_nbformat_minor}",
+            **{
+                f"v{v}": f"v{v}_{mod.nbformat_minor}"
+                for v, mod in cast("dict[int, nbformat.v4]", nbformat.versions).items()  # pyright: ignore[reportInvalidTypeForm]
+                if f"v{v}_0" in schemas
+            },
+        )
 
         (write_dir / "__init__.py").write_text(
             INIT_TEMPLATE.format(
-                imports=", ".join([*schemas, f"{current} as current"]),
-                all=[*schemas, "current"],
+                imports=", ".join(
+                    (*schemas, *(f"{mod} as {name}" for name, mod in aliases.items()))
+                ),
+                all=[*aliases, *schemas],
             )
         )
 
+        # generate individual versions
         with TemporaryDirectory() as _tmp:
             tmp = Path(_tmp)
 
