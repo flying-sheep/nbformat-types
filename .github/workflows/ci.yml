@@ -46,6 +46,7 @@ jobs:
       - name: Install UV
         uses: astral-sh/setup-uv@v6
         with:
+          python-version: ${{ matrix.env.python }}
           enable-cache: true
 
       - name: Install dependencies
