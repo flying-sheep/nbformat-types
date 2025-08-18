@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+from contextlib import redirect_stdout
 from importlib.resources import files
 from itertools import count
 from pathlib import Path
@@ -52,7 +54,7 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
 
     def initialize(self, version: str, build_data: dict[str, Any]) -> None:
         """Initialize the build hook."""
-        del version, build_data
+        del version
         min_python = next(
             v
             for minor in count(11)
@@ -62,6 +64,8 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
 
         write_dir = Path(self.config["dir"])
         write_dir.mkdir(parents=True, exist_ok=True)
+
+        build_data["artifacts"] = [str(write_dir)]
 
         schemas = _get_schemas()
         current = f"v{nbformat.current_nbformat}_{nbformat.current_nbformat_minor}"
@@ -92,4 +96,5 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
                 ],
             )
 
-            process_config(cfg, [])
+            with redirect_stdout(io.StringIO()):
+                process_config(cfg, [])
