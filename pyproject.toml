@@ -74,5 +74,5 @@ addopts = [
   "--pyargs",
 ]
 filterwarnings = [ "error" ]
-testpaths = [ "src", "test" ]
+testpaths = [ "nbformat_types", "./tests" ]
 xfail_strict = true
