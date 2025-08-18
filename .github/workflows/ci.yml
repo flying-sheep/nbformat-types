@@ -24,7 +24,7 @@ jobs:
     - uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
-    - run: uv pip install --system -e .[test]
+    - run: uv pip install --system -e .[test] pytest-md
     - uses: pavelzw/pytest-action@v2
       with:
         custom-arguments: --color=yes
