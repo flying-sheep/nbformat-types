@@ -30,7 +30,7 @@ urls.Source = "https://github.com/flying-sheep/nbformat-types"
 source = "vcs"
 
 [tool.hatch.build.hooks.custom]
-dir = "src/nbformat_types"
+dir = "src/nbformat_types/versions"
 
 [tool.hatch.envs.default]
 dependencies = [

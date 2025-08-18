@@ -21,16 +21,29 @@ if TYPE_CHECKING:
 HERE = Path(__file__).parent
 
 
-Ver = tuple[int, int] | tuple[None, None]
-"""Version type. `(None, None)` is used for the latest version."""
+INIT_TEMPLATE = '''\
+"""``nbformat`` types for individual versions."""
+from __future__ import annotations
+
+from . import {imports}
+
+__all__ = {all!r}
+'''
 
 
-def _get_schemas() -> dict[Ver, tuple[str, str]]:
+def _get_schemas() -> dict[str, tuple[str, str]]:
     nb_files = files(nbformat)
     return {
-        v: (file_name, (nb_files / f"v{mod.nbformat}" / file_name).read_text())
+        f"v{maj}_{min_}": (
+            file_name,
+            (nb_files / f"v{mod.nbformat}" / file_name).read_text(),
+        )
         for mod in cast("dict[str, nbformat.v4]", nbformat.versions).values()  # pyright: ignore[reportInvalidTypeForm]
-        for v, file_name in cast("dict[Ver, str]", mod.nbformat_schema).items()  # pyright: ignore[reportUnknownMemberType]
+        for (maj, min_), file_name in cast(
+            "dict[tuple[str, str] | tuple[None, None], str]",
+            getattr(mod, "nbformat_schema", {}),
+        ).items()
+        if (maj, min_) != (None, None)
     }
 
 
@@ -48,26 +61,34 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
         )
 
         write_dir = Path(self.config["dir"])
+        write_dir.mkdir(parents=True, exist_ok=True)
+
+        schemas = _get_schemas()
+        current = f"v{nbformat.current_nbformat}_{nbformat.current_nbformat_minor}"
+
+        (write_dir / "__init__.py").write_text(
+            INIT_TEMPLATE.format(
+                imports=", ".join([*schemas, f"{current} as current"]),
+                all=[*schemas, "current"],
+            )
+        )
 
         with TemporaryDirectory() as _tmp:
             tmp = Path(_tmp)
-            schemas = {
-                v: tmp / name
-                for v, (name, schema) in _get_schemas().items()
-                if (tmp / name).write_text(schema)
-            }
+
+            for name, schema in schemas.values():
+                (tmp / name).write_text(schema)
 
             cfg = jgc.Configuration(
                 pre_commit=jgc.PreCommitConfiguration(enable=True),
                 python_version=min_python,
                 generate=[
                     jgc.GenerateItem(
-                        source=str(path),
-                        destination=str(write_dir / f"{v[0]}_{v[1]}"),
+                        source=str(tmp / name),
+                        destination=str(write_dir / f"{mod}.py"),
                         root_name="Document",
                     )
-                    for v, path in schemas.items()
-                    if v != (None, None)
+                    for mod, (name, _) in schemas.items()
                 ],
             )
 

@@ -1,3 +1,4 @@
+/src/nbformat_types/versions/*.py
 /dist/
 /*cache/
 __pycache__/
