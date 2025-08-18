@@ -41,6 +41,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.hatch-test]
+default-args = [  ]
 features = [ "test" ]
 
 [tool.ruff]
