@@ -2,15 +2,11 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
-env:
-  JUPYTER_PLATFORM_DIRS: '1'
-
 jobs:
-  linux:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,3 +32,13 @@ jobs:
         verbose: true
         job-summary: true
         emoji: false
+
+  check:
+    if: always()
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+        - uses: re-actors/alls-green@release/v1
+          with:
+            jobs: ${{ toJSON(needs) }}
