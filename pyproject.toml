@@ -23,6 +23,7 @@ classifiers = [
 dynamic = [ "version" ]
 
 dependencies = [  ]
+optional-dependencies.test = [ "pytest" ]
 #Documentation = "https://???.readthedocs.io/"
 urls.Source = "https://github.com/flying-sheep/nbformat-types"
 
@@ -39,6 +40,12 @@ dependencies = [
   "nbformat",
 ]
 
+[tool.hatch.envs.hatch-test]
+default-args = [  ]
+features = [ "test" ]
+[[tool.hatch.envs.hatch-test.matrix]]
+python = [ "3.11", "3.13" ]
+
 [tool.ruff]
 src = [ "src" ]
 
@@ -49,8 +56,10 @@ lint.ignore = [
   "COM812", # Formatter handles trailing commas
   "D203",   # No blank line before class body instead of one (D211)
   "D213",   # Multi-line docstring summary should start at the first line, not second (D212)
+  "INP001", # Pytest directories are not namespace packages
   "TID252", # We use relative imports from parent modules
 ]
+lint.per-file-ignores."tests/*" = [ "D100", "D103", "S101" ]
 lint.allowed-confusables = [ "×", "–", "’", "α" ]
 lint.flake8-type-checking.exempt-modules = [  ]
 lint.flake8-type-checking.strict = true
@@ -65,4 +74,5 @@ addopts = [
   "--pyargs",
 ]
 filterwarnings = [ "error" ]
+testpaths = [ "nbformat_types", "./tests" ]
 xfail_strict = true

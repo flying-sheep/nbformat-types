@@ -110,3 +110,10 @@ class CustomBuildHook(BuildHookInterface[BuilderConfig]):
 
             with redirect_stdout(io.StringIO()):
                 process_config(cfg, [])
+
+        # https://github.com/sbrunner/jsonschema-gentypes/issues/1378
+        for generated in cfg["generate"]:
+            path = Path(generated["destination"])
+            code = path.read_text()
+            code = code.replace("\\", r"\\")
+            path.write_text(code)
