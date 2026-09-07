@@ -19,36 +19,28 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dynamic = [ "version" ]
-
-dependencies = [  ]
+dependencies = []
 optional-dependencies.test = [ "pytest" ]
-#Documentation = "https://???.readthedocs.io/"
 urls.Source = "https://github.com/flying-sheep/nbformat-types"
+# Documentation = "https://???.readthedocs.io/"
 
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.hooks.custom]
-dir = "src/nbformat_types/versions"
-
-[tool.hatch.envs.default]
-dependencies = [
+[tool.hatch]
+version.source = "vcs"
+build.hooks.custom.dir = "src/nbformat_types/versions"
+envs.default.dependencies = [
   "hatchling",
   "jsonschema-gentypes",
   "nbformat",
 ]
-
-[tool.hatch.envs.hatch-test]
-default-args = [  ]
-features = [ "test" ]
-[[tool.hatch.envs.hatch-test.matrix]]
-python = [ "3.11", "3.13" ]
+envs.hatch-test.features = [ "test" ]
+envs.hatch-test.matrix = [ { python = [ "3.11", "3.13" ] } ]
+envs.hatch-test.default-args = []
 
 [tool.ruff]
 src = [ "src" ]
-
 format.docstring-code-format = true
 lint.select = [ "ALL" ]
 lint.ignore = [
@@ -61,18 +53,18 @@ lint.ignore = [
 ]
 lint.per-file-ignores."tests/*" = [ "D100", "D103", "S101" ]
 lint.allowed-confusables = [ "×", "–", "’", "α" ]
-lint.flake8-type-checking.exempt-modules = [  ]
+lint.flake8-type-checking.exempt-modules = []
 lint.flake8-type-checking.strict = true
 lint.isort.known-first-party = [ "nbformat_types" ]
 lint.isort.required-imports = [ "from __future__ import annotations" ]
 
-[tool.pytest.ini_options]
-addopts = [
+[tool.pytest]
+ini_options.testpaths = [ "nbformat_types", "./tests" ]
+ini_options.addopts = [
   "--import-mode=importlib",
   "--strict-markers",
   "--doctest-modules",
   "--pyargs",
 ]
-filterwarnings = [ "error" ]
-testpaths = [ "nbformat_types", "./tests" ]
-xfail_strict = true
+ini_options.xfail_strict = true
+ini_options.filterwarnings = [ "error" ]
