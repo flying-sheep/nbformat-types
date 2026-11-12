@@ -60,7 +60,6 @@ lint.isort.known-first-party = [ "nbformat_types" ]
 lint.isort.required-imports = [ "from __future__ import annotations" ]
 
 [tool.pytest]
-testpaths = [ "nbformat_types", "./tests" ]
 addopts = [
   "--import-mode=importlib",
   "--doctest-modules",
@@ -68,3 +67,4 @@ addopts = [
 ]
 filterwarnings = [ "error" ]
 strict = true
+testpaths = [ "nbformat_types", "./tests" ]
