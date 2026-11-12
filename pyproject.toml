@@ -47,6 +47,7 @@ lint.select = [ "ALL" ]
 lint.ignore = [
   "C408",   # dict() syntax is preferable for dicts used as kwargs
   "COM812", # Formatter handles trailing commas
+  "CPY",    # No copyright notice for BSD
   "D203",   # No blank line before class body instead of one (D211)
   "D213",   # Multi-line docstring summary should start at the first line, not second (D212)
   "INP001", # Pytest directories are not namespace packages
